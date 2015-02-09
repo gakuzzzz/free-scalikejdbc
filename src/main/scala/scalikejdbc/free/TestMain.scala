@@ -4,7 +4,7 @@ import scalikejdbc._
 import scalikejdbc.config._
 
 import scalaz.Free.FreeC
-import scalaz.{Coyoneda, Monad, ~>}
+import scalaz.{Free, Coyoneda, Monad, ~>}
 
 object TestMain extends App {
 
@@ -18,13 +18,7 @@ object TestMain extends App {
     } yield (id, l, o)
   }
 
-  def runFC[S[_], M[_], A](sa: FreeC[S, A])(interp: S ~> M)(implicit M: Monad[M]): M[A] = {
-    sa.foldMap(new (({type λ[x] = Coyoneda[S, x]})#λ ~> M) {
-      def apply[B](cy: Coyoneda[S, B]): M[B] = M.map(interp(cy.fi))(cy.k)
-    })
-  }
-
-  def testApp = runFC(program[Query])(Interpreter)
+  def testApp = Free.runFC(program[Query])(Interpreter)
 
   DBs.setupAll()
 
