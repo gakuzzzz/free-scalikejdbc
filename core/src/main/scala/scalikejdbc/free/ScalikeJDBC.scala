@@ -13,10 +13,10 @@ sealed class ScalikeJDBC[F[_]](implicit I: Inject[Query, F]) {
   def seq[A](sql: SQL[A, HasExtractor]): FreeC[F, Seq[A]] = lift(GetSeq[A](sql.list()))
   def seq[A](sql: SQLBuilder[_])(f: WrappedResultSet => A): FreeC[F, Seq[A]] = seq(withSQL(sql).map(f))
 
-  def first[A](sql: SQL[A, HasExtractor]): FreeC[F, Option[A]] = lift(GetFirst[A](sql.first()))
+  def first[A](sql: SQL[A, HasExtractor]): FreeC[F, Option[A]] = lift(GetOption[A](sql.first()))
   def first[A](sql: SQLBuilder[_])(f: WrappedResultSet => A): FreeC[F, Option[A]] = first(withSQL(sql).map(f))
 
-  def single[A](sql: SQL[A, HasExtractor]): FreeC[F, Option[A]] = lift(GetSingle[A](sql.single()))
+  def single[A](sql: SQL[A, HasExtractor]): FreeC[F, Option[A]] = lift(GetOption[A](sql.single()))
   def single[A](sql: SQLBuilder[_])(f: WrappedResultSet => A): FreeC[F, Option[A]] = single(withSQL(sql).map(f))
 
   def foldLeft[A](sql: SQL[_, NoExtractor])(init: A)(f: (A, WrappedResultSet) => A): FreeC[F, A] = lift(Fold(sql, init, f))
