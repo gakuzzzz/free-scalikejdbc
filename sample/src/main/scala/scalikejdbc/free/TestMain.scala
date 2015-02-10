@@ -3,8 +3,7 @@ package scalikejdbc.free
 import scalikejdbc._
 import scalikejdbc.config._
 
-import scalaz.Free.FreeC
-import scalaz.{Free, Coyoneda, Monad, ~>}
+import scalaz.Free
 
 object TestMain extends App {
 
