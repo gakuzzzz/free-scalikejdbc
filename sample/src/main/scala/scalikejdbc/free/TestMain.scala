@@ -14,7 +14,8 @@ object TestMain extends App {
       id <- generateKey(sql"INSERT INTO account (name) VALUES ('Alice'), ('Bob')")
       l  <- seq(sql"SELECT name FROM account".map(_.get[String](1)))
       o  <- first(sql"SELECT id FROM account ORDER BY id".map(_.get[Int](1)))
-    } yield (id, l, o)
+      n  <- foldLeft(sql"SELECT name FROM account")("") { (s, rs) => s ++ rs.get[String](1) }
+    } yield (id, l, o, n)
   }
 
   def testApp = Free.runFC(program[Query])(Interpreter.base)

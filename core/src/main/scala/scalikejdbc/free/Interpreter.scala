@@ -12,12 +12,13 @@ abstract class Interpreter[M[_]](implicit M: Monad[M]) extends (Query ~> M) {
   protected def exec[A]: (DBSession => A) => M[A]
 
   def apply[A](c: Query[A]): M[A] = c match {
-    case GetSeq(sql)                 => exec(s => sql.apply()(s, NoConnectionPoolContext, null))   // TODO:
-    case GetFirst(sql)               => exec(s => sql.apply()(s, NoConnectionPoolContext, null))   // TODO:
-    case GetSingle(sql)              => exec(s => sql.apply()(s, NoConnectionPoolContext, null))   // TODO:
-    case Execute(sql)                => exec(sql.apply()(_))
-    case Update(sql)                 => exec(sql.apply()(_))
-    case UpdateWithGeneratedKey(sql) => exec(sql.apply()(_))
+    case GetSeq(sql)        => exec(s => sql.apply()(s, NoConnectionPoolContext, null))   // TODO:
+    case GetFirst(sql)      => exec(s => sql.apply()(s, NoConnectionPoolContext, null))   // TODO:
+    case GetSingle(sql)     => exec(s => sql.apply()(s, NoConnectionPoolContext, null))   // TODO:
+    case Fold(sql, init, f) => exec(sql.foldLeft(init)(f)(_))
+    case Execute(sql)       => exec(sql.apply()(_))
+    case Update(sql)        => exec(sql.apply()(_))
+    case GenerateKey(sql)   => exec(sql.apply()(_))
   }
 
 }
