@@ -7,15 +7,21 @@ import scalaz._
 
 object TestMain extends App {
 
+  private val a = Account.syntax("a")
+  private val ac = Account.column
+
   def program[F[_]](implicit S: ScalikeJDBC[F]) = {
     import S._
     for {
       _  <- execute(sql"CREATE TABLE account (id SERIAL PRIMARY KEY, name TEXT NOT NULL)")
-      id <- generateKey(sql"INSERT INTO account (name) VALUES ('Alice'), ('Bob')")
-      l  <- seq(sql"SELECT name FROM account".map(_.get[String](1)))
-      o  <- first(sql"SELECT id FROM account ORDER BY id".map(_.get[Int](1)))
+      i1 <- generateKey(sql"INSERT INTO account (name) VALUES ('Alice')")
+      i2 <- generateKey(insert.into(Account).namedValues(ac.name -> "Bob"))
+      l1 <- seq(sql"SELECT ${a.result.*} FROM ${Account as a}".map(Account(a)))
+      l2 <- seq(select.from(Account as a))(Account(a))
+      o1 <- first(sql"SELECT * FROM account ORDER BY id".map(_.int("id")))
+      o2 <- first(select.from(Account as a).orderBy(a.id))(_.int(a.resultName.id))
       n  <- foldLeft(sql"SELECT name FROM account")("") { (s, rs) => s ++ rs.get[String](1) }
-    } yield (id, l, o, n)
+    } yield (i1, l1, o1, n)
   }
 
   def testApp = Free.runFC(program[Query])(Interpreter.base)
