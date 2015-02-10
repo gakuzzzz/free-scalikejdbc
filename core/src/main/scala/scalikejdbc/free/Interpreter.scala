@@ -27,14 +27,14 @@ object Interpreter {
 
   type Executor[A] = Reader[DBSession, A]
   lazy val base = new Interpreter[Executor] {
-    protected def exec[A]: (DBSession => A) => Executor[A] = Reader.apply
+    protected def exec[A] = Reader.apply
   }
 
   type SQLEither[A] = SQLException \/ A
   type SafeExecutor[A] = ReaderT[SQLEither, DBSession, A]
   lazy val safe = new Interpreter[SafeExecutor] {
-    protected def exec[A]: (DBSession => A) => SafeExecutor[A] = { f =>
-      Kleisli.kleisli[SQLEither, DBSession, A] { s => \/.fromTryCatchThrowable[A, SQLException](f(s)) }
+    protected def exec[A] = { f =>
+      Kleisli.kleisliU { s: DBSession => \/.fromTryCatchThrowable[A, SQLException](f(s)) }
     }
   }
 
