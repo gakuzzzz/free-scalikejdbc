@@ -4,6 +4,7 @@ import scalikejdbc._
 import scalikejdbc.config._
 
 import scalaz._
+import Scalaz._
 
 object TestMain extends App {
 
@@ -52,5 +53,9 @@ object TestMain extends App {
   println(DB.localTx(testApp.run))
 
   println(DB.localTx(failApp.run))
+
+  def debug = Free.runFC(program[Query])(Interpreter.tester)
+
+  println(debug.run(Seq(true, 1L, 2L, Seq(Account(1, "test1")), Seq(Account(1, "test1")), Option(1), Option(1), "", "")))
 
 }

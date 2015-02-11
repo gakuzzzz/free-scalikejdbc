@@ -16,7 +16,8 @@ lazy val core = (project in file("core")).settings(
   libraryDependencies ++= (
     ("org.scalikejdbc"         %% "scalikejdbc"                      % scalikejdbcVersion) ::
     ("org.scalaz"              %% "scalaz-core"                      % "7.1.1") ::
-    ("org.scalatest"           %% "scalatest"                        % "2.1.6"              % "test") ::
+    ("org.scalatest"           %% "scalatest"                        % "2.2.2"              % "test") ::
+    ("org.scalacheck"          %% "scalacheck"                       % "1.12.1"             % "test") ::
     Nil
   ),
   scalacOptions ++= scalacOpts
@@ -30,7 +31,8 @@ lazy val sample = (project in file("sample")).settings(
     ("org.scalikejdbc"         %% "scalikejdbc-config"               % scalikejdbcVersion) ::
     ("org.scalikejdbc"         %% "scalikejdbc-syntax-support-macro" % scalikejdbcVersion) ::
     ("com.h2database"           % "h2"                               % "1.4.+") ::
-    ("org.scalatest"           %% "scalatest"                        % "2.1.6"               % "test") ::
+    ("org.scalatest"           %% "scalatest"                        % "2.2.2"              % "test") ::
+    ("org.scalacheck"          %% "scalacheck"                       % "1.12.1"             % "test") ::
     Nil
   ),
   scalacOptions ++= scalacOpts
