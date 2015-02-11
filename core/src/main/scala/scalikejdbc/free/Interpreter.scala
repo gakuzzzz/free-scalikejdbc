@@ -18,8 +18,8 @@ abstract class Interpreter[M[_]](implicit M: Monad[M]) extends (Query ~> M) {
   protected def exec[A]: (DBSession => A) => M[A]
 
   def apply[A](c: Query[A]): M[A] = c match {
-    case GetSeq(sql)        => exec(implicit s => sql.asInstanceOf[SQLToList[A, HasExtractor]].apply())   // TODO:
-    case GetOption(sql)     => exec(implicit s => sql.asInstanceOf[SQLToOption[A, HasExtractor]].apply())   // TODO:
+    case GetSeq(sql)        => exec(implicit s => sql.apply())   // TODO:
+    case GetOption(sql)     => exec(implicit s => sql.apply())   // TODO:
     case Fold(sql, init, f) => exec(implicit s => sql.foldLeft(init)(f))
     case Execute(sql)       => exec(implicit s => sql.apply())
     case Update(sql)        => exec(implicit s => sql.apply())
@@ -27,7 +27,6 @@ abstract class Interpreter[M[_]](implicit M: Monad[M]) extends (Query ~> M) {
   }
 
 }
-
 
 object Interpreter {
 
