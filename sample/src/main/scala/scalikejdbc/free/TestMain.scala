@@ -20,8 +20,9 @@ object TestMain extends App {
       l2 <- seq(select.from(Account as a))(Account(a))
       o1 <- first(sql"SELECT * FROM account ORDER BY id".map(_.int("id")))
       o2 <- first(select.from(Account as a).orderBy(a.id))(_.int(a.resultName.id))
-      n  <- foldLeft(sql"SELECT name FROM account")("") { (s, rs) => s ++ rs.get[String](1) }
-    } yield (i1, l1, o1, n)
+      n1 <- foldLeft(sql"SELECT name FROM account")("") { (s, rs) => s ++ rs.get[String](1) }
+      n2 <- foldLeft(select.from(Account as a))("") { (s, rs) => s ++ Account(a)(rs).name }
+    } yield (i1, l1, o1, n1)
   }
 
   def testApp = Free.runFC(program[Query])(Interpreter.base)
