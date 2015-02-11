@@ -26,7 +26,7 @@ object TestMain extends App {
     } yield (i1, l1, o1, n1)
   }
 
-  def testApp = Free.runFC(program[Query])(Interpreter.base)
+  def testApp = Free.runFC(program[Query])(Interpreter.transaction)
 
   def failPg[F[_]](implicit S: ScalikeJDBC[F]) = {
     import S._
@@ -36,7 +36,7 @@ object TestMain extends App {
     } yield (l, o)
   }
 
-  def failApp = Free.runFC(failPg[Query])(Interpreter.safe)
+  def failApp = Free.runFC(failPg[Query])(Interpreter.safeTransaction)
 
   implicit def sqlEitherTxBoundary[A]  = new TxBoundary[Interpreter.SQLEither[A]] {
     def finishTx(result: Interpreter.SQLEither[A], tx: Tx) = {
@@ -50,12 +50,18 @@ object TestMain extends App {
 
   DBs.setupAll()
 
+  println("-------------------------------")
+
   println(DB.localTx(testApp.run))
+
+  println("-------------------------------")
 
   println(DB.localTx(failApp.run))
 
   def debug = Free.runFC(program[Query])(Interpreter.tester)
 
-  println(debug.run(Seq(true, 1L, 2L, Seq(Account(1, "test1")), Seq(Account(1, "test1")), Option(1), Option(1), "", "")))
+  println("-------------------------------")
+
+  println(debug.run(Seq(true, 1L, 2L, Seq(Account(1, "test1")), Seq(Account(1, "test1")), Option(1), Option(1), "", "")).run._1.mkString("\n"))
 
 }

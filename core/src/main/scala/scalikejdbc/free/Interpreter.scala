@@ -13,8 +13,8 @@ abstract class Interpreter[M[_]](implicit M: Monad[M]) extends (Query ~> M) {
   protected def exec[A]: (DBSession => A) => M[A]
 
   def apply[A](c: Query[A]): M[A] = c match {
-    case GetSeq(sql)        => exec(implicit s => sql.apply())   // TODO:
-    case GetOption(sql)     => exec(implicit s => sql.apply())   // TODO:
+    case GetSeq(sql)        => exec(implicit s => sql.apply())
+    case GetOption(sql)     => exec(implicit s => sql.apply())
     case Fold(sql, init, f) => exec(implicit s => sql.foldLeft(init)(f))
     case Execute(sql)       => exec(implicit s => sql.apply())
     case Update(sql)        => exec(implicit s => sql.apply())
@@ -25,14 +25,22 @@ abstract class Interpreter[M[_]](implicit M: Monad[M]) extends (Query ~> M) {
 
 object Interpreter {
 
-  type Executor[A] = Reader[DBSession, A]
-  lazy val base = new Interpreter[Executor] {
-    protected def exec[A] = Reader.apply
+  lazy val auto = new Interpreter[Id] {
+    protected def exec[A] = f => f(AutoSession)
   }
 
   type SQLEither[A] = SQLException \/ A
+  lazy val safe = new Interpreter[SQLEither] {
+    protected def exec[A] = f => \/.fromTryCatchThrowable[A, SQLException](f(AutoSession))
+  }
+
+  type TxExecutor[A] = Reader[DBSession, A]
+  lazy val transaction = new Interpreter[TxExecutor] {
+    protected def exec[A] = Reader.apply
+  }
+
   type SafeExecutor[A] = ReaderT[SQLEither, DBSession, A]
-  lazy val safe = new Interpreter[SafeExecutor] {
+  lazy val safeTransaction = new Interpreter[SafeExecutor] {
     protected def exec[A] = { f =>
       Kleisli.kleisliU { s: DBSession => \/.fromTryCatchThrowable[A, SQLException](f(s)) }
     }
