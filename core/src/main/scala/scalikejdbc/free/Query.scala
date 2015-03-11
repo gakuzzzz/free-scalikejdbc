@@ -10,7 +10,7 @@ sealed abstract class Query[A] {
 
 object Query {
 
-  case class GetSeq[A](sql: SQLToList[A, HasExtractor]) extends Query[Seq[A]]
+  case class GetSeq[A](sql: SQLToCollection[A, HasExtractor]) extends Query[Seq[A]]
   case class GetOption[A](sql: SQLToOption[A, HasExtractor]) extends Query[Option[A]]
   case class Fold[A](sql: SQL[_, NoExtractor], init: A, f: (A, WrappedResultSet) => A) extends Query[A]
 
