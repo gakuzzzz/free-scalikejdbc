@@ -16,6 +16,9 @@ lazy val core = (project in file("core")).settings(
   libraryDependencies ++=
     ("org.scalikejdbc"         %% "scalikejdbc"                      % scalikejdbcVersion) ::
     ("org.scalaz"              %% "scalaz-core"                      % "7.1.1") ::
+    ("org.scalikejdbc"         %% "scalikejdbc-test"                 % scalikejdbcVersion   % "test") ::
+    ("org.scalikejdbc"         %% "scalikejdbc-config"               % scalikejdbcVersion   % "test") ::
+    ("org.scalikejdbc"         %% "scalikejdbc-syntax-support-macro" % scalikejdbcVersion   % "test") ::
     ("org.scalatest"           %% "scalatest"                        % "2.2.2"              % "test") ::
     ("org.scalacheck"          %% "scalacheck"                       % "1.12.1"             % "test") ::
     Nil,
