@@ -5,6 +5,7 @@ import scalikejdbc.config._
 
 import scalaz._
 import Scalaz._
+import Interpreter.TesterBuffer
 
 object TestMain extends App {
 
@@ -62,6 +63,6 @@ object TestMain extends App {
 
   println("-------------------------------")
 
-  println(debug.run(Seq(true, 1L, 2L, Seq(Account(1, "test1")), Seq(Account(1, "test1")), Option(1), Option(1), "", "")).run._1.mkString("\n"))
+  println(debug.run(TesterBuffer(Seq(true, 1L, 2L, Seq(Account(1, "test1")), Seq(Account(1, "test1")), Option(1), Option(1), "", "")))._1.output.mkString("\n"))
 
 }

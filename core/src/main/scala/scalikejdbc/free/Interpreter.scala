@@ -10,7 +10,7 @@ import Scalaz._
 
 abstract class Interpreter[M[_]](implicit M: Monad[M]) extends (Query ~> M) {
 
-  protected def exec[A]: (DBSession => A) => M[A]
+  protected def exec[A](f: DBSession => A): M[A]
 
   def apply[A](c: Query[A]): M[A] = c match {
     case GetSeq(sql)        => exec(implicit s => sql.apply[Vector]())
@@ -26,34 +26,34 @@ abstract class Interpreter[M[_]](implicit M: Monad[M]) extends (Query ~> M) {
 object Interpreter {
 
   lazy val auto = new Interpreter[Id] {
-    protected def exec[A] = f => f(AutoSession)
+    protected def exec[A](f: DBSession => A) = f(AutoSession)
   }
 
   type SQLEither[A] = SQLException \/ A
   lazy val safe = new Interpreter[SQLEither] {
-    protected def exec[A] = f => \/.fromTryCatchThrowable[A, SQLException](f(AutoSession))
+    protected def exec[A](f: DBSession => A) = \/.fromTryCatchThrowable[A, SQLException](f(AutoSession))
   }
 
   type TxExecutor[A] = Reader[DBSession, A]
   lazy val transaction = new Interpreter[TxExecutor] {
-    protected def exec[A] = Reader.apply
+    protected def exec[A](f: DBSession => A) = Reader.apply(f)
   }
 
   type SafeExecutor[A] = ReaderT[SQLEither, DBSession, A]
   lazy val safeTransaction = new Interpreter[SafeExecutor] {
-    protected def exec[A] = { f =>
+    protected def exec[A](f: DBSession => A) = {
       Kleisli.kleisliU { s: DBSession => \/.fromTryCatchThrowable[A, SQLException](f(s)) }
     }
   }
 
-  type StatementWriter[A] = Writer[List[(String, Seq[Any])], A]
-  type Tester[A] = StateT[StatementWriter, Seq[Any], A]
+  case class TesterBuffer(input: Seq[Any], output: Seq[(String, Seq[Any])] = Vector())
+  type Tester[A] = State[TesterBuffer, A]
   lazy val tester = new Interpreter[Tester] {
-    protected def exec[A] = ???
+    protected def exec[A](f: DBSession => A) = ???
 
     override def apply[A](c: Query[A]): Tester[A] = {
-      StateT[StatementWriter, Seq[Any], A] { input =>
-        Writer(List(c.statement -> c.parameters), input.tail -> input.head.asInstanceOf[A])
+      State[TesterBuffer, A] { case TesterBuffer(head +: tail, output) =>
+        TesterBuffer(tail, output :+ (c.statement -> c.parameters)) -> head.asInstanceOf[A]
       }
     }
 
@@ -67,3 +67,4 @@ object Interpreter {
 //  }
 
 }
+
