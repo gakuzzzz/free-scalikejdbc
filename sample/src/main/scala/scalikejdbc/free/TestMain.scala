@@ -42,8 +42,8 @@ object TestMain extends App {
   implicit def sqlEitherTxBoundary[A]  = new TxBoundary[Interpreter.SQLEither[A]] {
     def finishTx(result: Interpreter.SQLEither[A], tx: Tx) = {
       result match {
-        case -\/(_) => tx.commit()
-        case \/-(_) => tx.rollback()
+        case \/-(_) => tx.commit()
+        case -\/(_) => tx.rollback()
       }
       result
     }
