@@ -12,7 +12,7 @@ val scalikejdbcVersion = "2.2.+"
 lazy val core = (project in file("core")).settings(
   name := """free-scalikejdbc""",
   version := "1.0",
-  scalaVersion := "2.11.5",
+  scalaVersion := "2.11.6",
   libraryDependencies ++=
     ("org.scalikejdbc"         %% "scalikejdbc"                      % scalikejdbcVersion) ::
     ("org.scalaz"              %% "scalaz-core"                      % "7.1.1") ::
