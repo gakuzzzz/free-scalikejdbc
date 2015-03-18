@@ -23,7 +23,8 @@ lazy val core = (project in file("core")).settings(
     ("org.scalatest"           %% "scalatest"                        % "2.2.2"              % "test") ::
     ("org.scalacheck"          %% "scalacheck"                       % "1.12.1"             % "test") ::
     Nil,
-  scalacOptions ++= scalacOpts
+  scalacOptions ++= scalacOpts,
+  parallelExecution in Test := false
 )
 
 lazy val sample = (project in file("sample")).settings(
