@@ -37,7 +37,7 @@ class InterpreterSpec extends FunSpec with Fixtures {
     } yield account
   }
 
-    describe("auto interpreter") {
+  describe("auto interpreter") {
 
     it("should execute Query") {
       forAll(Gen.alphaStr) { name: String =>
@@ -105,15 +105,7 @@ class InterpreterSpec extends FunSpec with Fixtures {
 
   describe("safeTransaction interpreter") {
 
-    implicit def sqlEitherTxBoundary[A] = new TxBoundary[Interpreter.SQLEither[A]] {
-      def finishTx(result: Interpreter.SQLEither[A], tx: Tx) = {
-        result match {
-          case \/-(_) => tx.commit()
-          case -\/(_) => tx.rollback()
-        }
-        result
-      }
-    }
+    import Interpreter.SQLEither.TxBoundary
 
     it("should execute Query") {
       forAll(Gen.alphaStr) { name: String =>

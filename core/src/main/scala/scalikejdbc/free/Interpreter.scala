@@ -30,6 +30,17 @@ object Interpreter {
   }
 
   type SQLEither[A] = SQLException \/ A
+  object SQLEither {
+    implicit def TxBoundary[A] = new TxBoundary[SQLEither[A]] {
+      def finishTx(result: SQLEither[A], tx: Tx) = {
+        result match {
+          case \/-(_) => tx.commit()
+          case -\/(_) => tx.rollback()
+        }
+        result
+      }
+    }
+  }
   lazy val safe = new Interpreter[SQLEither] {
     protected def exec[A](f: DBSession => A) = \/.fromTryCatchThrowable[A, SQLException](f(AutoSession))
   }
