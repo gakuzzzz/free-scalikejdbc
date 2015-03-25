@@ -3,7 +3,6 @@ package scalikejdbc.free
 import org.scalatest.FunSpec
 import org.scalatest.prop.PropertyChecks._
 import org.scalacheck.Gen
-import scalaz.Free
 import scalikejdbc._
 
 class ScalikeJDBCSpec extends FunSpec with Fixtures {
@@ -35,8 +34,7 @@ class ScalikeJDBCSpec extends FunSpec with Fixtures {
 
     it("should build Query") {
       forAll(Gen.alphaStr) { name: String =>
-        val p = create[Query](name)
-        val account = Free.runFC(p)(Interpreter.auto)
+        val account = Interpreter.auto.run(create(name))
         assert(account.map(_.name) === Some(name))
       }
     }

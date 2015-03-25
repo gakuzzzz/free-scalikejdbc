@@ -3,10 +3,18 @@ package scalikejdbc.free
 import java.sql.SQLException
 
 import scalikejdbc._
-import scalikejdbc.free.Query._
 
 import scalaz._
 import Scalaz._
+import scalaz.Free._
+import scalikejdbc.free.Query.GetSeq
+import scalaz.-\/
+import scalikejdbc.free.Query.GenerateKey
+import scalikejdbc.free.Query.Update
+import scalikejdbc.free.Query.Execute
+import scalikejdbc.free.Query.Fold
+import scalaz.\/-
+import scalikejdbc.free.Query.GetOption
 
 abstract class Interpreter[M[_]](implicit M: Monad[M]) extends (Query ~> M) {
 
@@ -20,6 +28,8 @@ abstract class Interpreter[M[_]](implicit M: Monad[M]) extends (Query ~> M) {
     case Update(sql)        => exec(implicit s => sql.apply())
     case GenerateKey(sql)   => exec(implicit s => sql.apply())
   }
+
+  def run[A](q: FreeC[Query, A]): M[A] = Free.runFC(q)(this)
 
 }
 

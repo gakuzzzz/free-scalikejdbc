@@ -6,8 +6,7 @@ import scalikejdbc._
 import org.scalatest.prop.PropertyChecks._
 
 import scala.util.Try
-import scalaz.{\/-, -\/, Free}
-import scalaz.Free._
+import scalaz.Free
 
 class InterpreterSpec extends FunSpec with Fixtures {
 
@@ -41,18 +40,17 @@ class InterpreterSpec extends FunSpec with Fixtures {
 
     it("should execute Query") {
       forAll(Gen.alphaStr) { name: String =>
-        val p = create[Query](name)
-        val account = Free.runFC(p)(Interpreter.auto)
+        val account = Interpreter.auto.run(create(name))
         assert(account.map(_.name) === Some(name))
       }
     }
 
     it("should separate transaction") {
       forAll(Gen.alphaStr) { name: String =>
-        val all1 = Free.runFC(findAll[Query])(Interpreter.auto)
-        val errorResult = Try(Free.runFC(error[Query](name))(Interpreter.auto))
+        val all1 = Interpreter.auto.run(findAll)
+        val errorResult = Try(Interpreter.auto.run(error(name)))
         assert(errorResult.isFailure)
-        val all2 = Free.runFC(findAll[Query])(Interpreter.auto)
+        val all2 = Interpreter.auto.run(findAll)
         assert(all1.size + 1 === all2.size)
       }
     }
@@ -62,8 +60,7 @@ class InterpreterSpec extends FunSpec with Fixtures {
 
     it("should execute Query") {
       forAll(Gen.alphaStr) { name: String =>
-        val p = create[Query](name)
-        val account = Free.runFC(p)(Interpreter.safe)
+        val account = Interpreter.safe.run(create(name))
         assert(account.isRight)
         assert(account.getOrElse(None).map(_.name) === Some(name))
       }
@@ -71,10 +68,10 @@ class InterpreterSpec extends FunSpec with Fixtures {
 
     it("should separate transaction") {
       forAll(Gen.alphaStr) { name: String =>
-        val all1 = Free.runFC(findAll[Query])(Interpreter.safe)
-        val errorResult = Free.runFC(error[Query](name))(Interpreter.safe)
+        val all1 = Interpreter.safe.run(findAll)
+        val errorResult = Interpreter.safe.run(error(name))
         assert(errorResult.isLeft)
-        val all2 = Free.runFC(findAll[Query])(Interpreter.safe)
+        val all2 = Interpreter.safe.run(findAll)
         assert(all1.map(_.size + 1) == all2.map(_.size))
       }
     }
@@ -85,18 +82,17 @@ class InterpreterSpec extends FunSpec with Fixtures {
 
     it("should execute Query") {
       forAll(Gen.alphaStr) { name: String =>
-        val p = create[Query](name)
-        val account = DB.localTx(Free.runFC(p)(Interpreter.transaction).run)
+        val account = DB.localTx(Interpreter.transaction.run(create(name)))
         assert(account.map(_.name) === Some(name))
       }
     }
 
     it("should control transaction") {
       forAll(Gen.alphaStr) { name: String =>
-        val all1 = DB.localTx(Free.runFC(findAll[Query])(Interpreter.transaction).run)
-        val errorResult = Try(DB.localTx(Free.runFC(error[Query](name))(Interpreter.transaction).run))
+        val all1 = DB.localTx(Interpreter.transaction.run(findAll))
+        val errorResult = Try(DB.localTx(Interpreter.transaction.run(error(name))))
         assert(errorResult.isFailure)
-        val all2 = DB.localTx(Free.runFC(findAll[Query])(Interpreter.transaction).run)
+        val all2 = DB.localTx(Interpreter.transaction.run(findAll))
         assert(all1.size === all2.size)
       }
     }
@@ -109,8 +105,7 @@ class InterpreterSpec extends FunSpec with Fixtures {
 
     it("should execute Query") {
       forAll(Gen.alphaStr) { name: String =>
-        val p = create[Query](name)
-        val account = DB.localTx(Free.runFC(p)(Interpreter.safeTransaction).run)
+        val account = DB.localTx(Interpreter.safeTransaction.run(create(name)))
         assert(account.isRight)
         assert(account.getOrElse(None).map(_.name) === Some(name))
       }
@@ -118,10 +113,10 @@ class InterpreterSpec extends FunSpec with Fixtures {
 
     it("should control transaction") {
       forAll(Gen.alphaStr) { name: String =>
-        val all1 = DB.localTx(Free.runFC(findAll[Query])(Interpreter.safeTransaction).run)
-        val errorResult = DB.localTx(Free.runFC(error[Query](name))(Interpreter.safeTransaction).run)
+        val all1 = DB.localTx(Interpreter.safeTransaction.run(findAll))
+        val errorResult = DB.localTx(Interpreter.safeTransaction.run(error(name)))
         assert(errorResult.isLeft)
-        val all2 = DB.localTx(Free.runFC(findAll[Query])(Interpreter.safeTransaction).run)
+        val all2 = DB.localTx(Interpreter.safeTransaction.run(findAll))
         assert(all1.map(_.size) == all2.map(_.size))
       }
     }
@@ -134,12 +129,11 @@ class InterpreterSpec extends FunSpec with Fixtures {
 
     it("should not execute Query") {
       forAll(Gen.alphaStr) { name: String =>
-        val all1 = Free.runFC(findAll[Query])(Interpreter.auto)
-        val p = create[Query](name)
-        val (TesterBuffer(_, queries), account) = Free.runFC(p)(Interpreter.tester).run(TesterBuffer(Vector(3L, Option(Account(3, name)))))
+        val all1 = Interpreter.auto.run(findAll)
+        val (TesterBuffer(_, queries), account) = Interpreter.tester.run(create(name)).run(TesterBuffer(Vector(3L, Option(Account(3, name)))))
         assert(account.map(_.name) === Some(name))
         assert(queries(0)._1 === s"insert into account (name) values (?)")
-        val all2 = Free.runFC(findAll[Query])(Interpreter.auto)
+        val all2 = Interpreter.auto.run(findAll)
         assert(all1.size === all2.size)
       }
     }

@@ -30,7 +30,7 @@ lazy val core = (project in file("core")).settings(
 lazy val sample = (project in file("sample")).settings(
   name := """free-scalikejdbc-sample""",
   version := "1.0",
-  scalaVersion := "2.11.5",
+  scalaVersion := "2.11.6",
   libraryDependencies ++=
     ("org.scalikejdbc"         %% "scalikejdbc-config"               % scalikejdbcVersion) ::
     ("org.scalikejdbc"         %% "scalikejdbc-syntax-support-macro" % scalikejdbcVersion) ::
