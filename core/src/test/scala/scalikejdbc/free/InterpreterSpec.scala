@@ -24,7 +24,7 @@ class InterpreterSpec extends FunSpec with Fixtures {
   def findAll[F[_]](implicit S: ScalikeJDBC[F]) = {
     import S._
     for {
-      accounts <- seq(select.from(Account as a).orderBy(a.id))(Account(a))
+      accounts <- vector(select.from(Account as a).orderBy(a.id))(Account(a))
     } yield accounts
   }
   

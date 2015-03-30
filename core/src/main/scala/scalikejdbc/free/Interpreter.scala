@@ -7,21 +7,17 @@ import scalikejdbc._
 import scalaz._
 import Scalaz._
 import scalaz.Free._
-import scalikejdbc.free.Query.GetSeq
+import scalikejdbc.free.Query._
 import scalaz.-\/
-import scalikejdbc.free.Query.GenerateKey
-import scalikejdbc.free.Query.Update
-import scalikejdbc.free.Query.Execute
-import scalikejdbc.free.Query.Fold
 import scalaz.\/-
-import scalikejdbc.free.Query.GetOption
 
 abstract class Interpreter[M[_]](implicit M: Monad[M]) extends (Query ~> M) {
 
   protected def exec[A](f: DBSession => A): M[A]
 
   def apply[A](c: Query[A]): M[A] = c match {
-    case GetSeq(sql)        => exec(implicit s => sql.apply[Vector]())
+    case GetVector(sql)     => exec(implicit s => sql.apply[Vector]())
+    case GetList(sql)       => exec(implicit s => sql.apply())
     case GetOption(sql)     => exec(implicit s => sql.apply())
     case Fold(sql, init, f) => exec(implicit s => sql.foldLeft(init)(f))
     case Execute(sql)       => exec(implicit s => sql.apply())
