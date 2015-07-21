@@ -14,9 +14,12 @@ lazy val core = (project in file("core")).settings(
   version := "1.0",
   scalaVersion := "2.11.6",
   resolvers += "bintray/non" at "http://dl.bintray.com/non/maven",
+  resolvers += "Scalaz Bintray Repo" at "https://dl.bintray.com/scalaz/releases",
   libraryDependencies ++=
     ("org.scalikejdbc"         %% "scalikejdbc"                      % scalikejdbcVersion) ::
-    ("org.scalaz"              %% "scalaz-core"                      % "7.1.1") ::
+    ("org.scalaz"              %% "scalaz-core"                      % "7.1.3") ::
+    ("org.scalaz"              %% "scalaz-concurrent"                % "7.1.3") ::
+    ("org.scalaz.stream"       %% "scalaz-stream"                    % "0.7.1a") ::
     ("com.h2database"           % "h2"                               % "1.4.+"              % "test") ::
     ("org.scalikejdbc"         %% "scalikejdbc-test"                 % scalikejdbcVersion   % "test") ::
     ("org.scalikejdbc"         %% "scalikejdbc-config"               % scalikejdbcVersion   % "test") ::
@@ -33,7 +36,7 @@ lazy val sample = (project in file("sample")).settings(
   name := """free-scalikejdbc-sample""",
   version := "1.0",
   scalaVersion := "2.11.6",
-  resolvers += "bintray/non" at "http://dl.bintray.com/non/maven",
+  resolvers ++= ("bintray/non" at "http://dl.bintray.com/non/maven") :: Resolver.sonatypeRepo("releases") :: Nil,
   libraryDependencies ++=
     ("org.scalikejdbc"         %% "scalikejdbc-config"               % scalikejdbcVersion) ::
     ("org.scalikejdbc"         %% "scalikejdbc-syntax-support-macro" % scalikejdbcVersion) ::
@@ -42,7 +45,8 @@ lazy val sample = (project in file("sample")).settings(
     ("org.scalacheck"          %% "scalacheck"                       % "1.12.1"             % "test") ::
     Nil,
   scalacOptions ++= scalacOpts,
-  addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.5.2")
+  addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.5.2"),
+  addCompilerPlugin("org.scalamacros" %% "paradise" % "2.0.1" cross CrossVersion.full)
 ).dependsOn(core)
 
 lazy val root = (project in file(".")).aggregate(core, sample)

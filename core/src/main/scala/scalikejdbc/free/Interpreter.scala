@@ -5,11 +5,9 @@ import java.sql.SQLException
 import scalikejdbc._
 
 import scalaz._
-import Scalaz._
+import scalaz.Id._
 import scalaz.Free._
 import scalikejdbc.free.Query._
-import scalaz.-\/
-import scalaz.\/-
 
 abstract class Interpreter[M[_]](implicit M: Monad[M]) extends (Query ~> M) {
 
@@ -75,13 +73,6 @@ object Interpreter {
     }
 
   }
-
-//  type AsyncExecutor[A] = ReaderT[Future, DBSession, A]
-//  def async(implicit ec: ExecutionContext) = new Interpreter[AsyncExecutor] {
-//    protected def exec[A]: (DBSession => A) => AsyncExecutor[A] = {
-//      f => Kleisli.kleisli(s => Future(f(s)))
-//    }
-//  }
 
 }
 
