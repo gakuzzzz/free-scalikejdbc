@@ -130,7 +130,7 @@ class InterpreterSpec extends FunSpec with Fixtures {
     it("should not execute Query") {
       forAll(Gen.alphaStr) { name: String =>
         val all1 = Interpreter.auto.run(findAll)
-        val (TesterBuffer(_, queries), account) = Interpreter.tester.run(create(name)).run(TesterBuffer(Vector(3L, Option(Account(3, name)))))
+        val (TesterBuffer(_, queries), account) = Interpreter.tester.run(create(name)).run(TesterBuffer(Vector(3L, Option(Account(Account.tagOf(3), name)))))
         assert(account.map(_.name) === Some(name))
         assert(queries(0)._1 === s"insert into account (name) values (?)")
         val all2 = Interpreter.auto.run(findAll)
