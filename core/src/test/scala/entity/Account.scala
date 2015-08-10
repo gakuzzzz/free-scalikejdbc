@@ -1,9 +1,10 @@
-package scalikejdbc.free
+package entity
 
 import scalikejdbc._
-import scalikejdbc.tags._
-import scalaz._
+import scalikejdbc.binders._
+
 import scalaz.Tag._
+import scalaz._
 
 case class Account(id: Int @@ Account, name: String) {
 

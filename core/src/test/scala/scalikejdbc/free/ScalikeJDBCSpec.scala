@@ -1,5 +1,6 @@
 package scalikejdbc.free
 
+import entity.Account
 import org.scalatest.FunSpec
 import org.scalatest.prop.PropertyChecks._
 import org.scalacheck.Gen
