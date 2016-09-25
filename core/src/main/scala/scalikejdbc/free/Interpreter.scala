@@ -6,14 +6,14 @@ import scalikejdbc._
 
 import scalaz._
 import scalaz.Id._
-import scalaz.Free._
+import scalaz.Free
 import scalikejdbc.free.Query._
 
 abstract class Interpreter[M[_]](implicit M: Monad[M]) extends (Query ~> M) {
 
   protected def exec[A](f: DBSession => A): M[A]
 
-  def apply[A](c: Query[A]): M[A] = c match {
+  override def apply[A](c: Query[A]): M[A] = c match {
     case GetVector(sql)     => exec(implicit s => sql.apply[Vector]())
     case GetList(sql)       => exec(implicit s => sql.apply())
     case GetOption(sql)     => exec(implicit s => sql.apply())
@@ -23,7 +23,7 @@ abstract class Interpreter[M[_]](implicit M: Monad[M]) extends (Query ~> M) {
     case GenerateKey(sql)   => exec(implicit s => sql.apply())
   }
 
-  def run[A](q: FreeC[Query, A]): M[A] = Free.runFC(q)(this)
+  def run[A](q: Free[Query, A]): M[A] = q.foldMap(this)
 
 }
 
