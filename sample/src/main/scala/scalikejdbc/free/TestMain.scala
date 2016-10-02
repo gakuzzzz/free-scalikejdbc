@@ -6,8 +6,6 @@ import scalikejdbc.config._
 import scalaz._
 import Scalaz._
 import Interpreter.TesterBuffer
-import scalaz.Free.FreeC
-import scalaz.Free._
 
 object TestMain extends App {
 
@@ -29,7 +27,7 @@ object TestMain extends App {
     } yield (i1, l1, o1, n1)
   }
 
-  def testApp = Free.runFC(program[Query])(Interpreter.transaction)
+  def testApp = program[Query].foldMap(Interpreter.transaction)
 
   def failPg[F[_]](implicit S: ScalikeJDBC[F]) = {
     import S._
@@ -39,7 +37,7 @@ object TestMain extends App {
     } yield (l, o)
   }
 
-  def failApp = Free.runFC(failPg[Query])(Interpreter.safeTransaction)
+  def failApp = failPg[Query].foldMap(Interpreter.safeTransaction)
 
   implicit def sqlEitherTxBoundary[A]  = new TxBoundary[Interpreter.SQLEither[A]] {
     def finishTx(result: Interpreter.SQLEither[A], tx: Tx) = {
@@ -61,7 +59,7 @@ object TestMain extends App {
 
   println(DB.localTx(failApp.run))
 
-  def debug = Free.runFC(program[Query])(Interpreter.tester)
+  def debug = program[Query].foldMap(Interpreter.tester)
 
   println("-------------------------------")
 
@@ -71,25 +69,25 @@ object TestMain extends App {
   type SkillId = Long
   type Name = String
 
-  def createProgrammer[F[_]](name: Name, skillIds: List[SkillId])(implicit S: ScalikeJDBC[F], M: Applicative[FreeC[F, ?]]) = {
+  def createProgrammer[F[_]](name: Name, skillIds: List[SkillId])(implicit S: ScalikeJDBC[F], M: Applicative[Free[F, ?]]) = {
     import S._
     for {
       id     <- generateKey(insert.into(Programmer).namedValues(pc.name -> name))
       skills <- list(select.from(Skill as s).where.in(s.id, skillIds))(Skill(s))
-      _      <- skills.traverse[FreeC[F, ?], Boolean](s => execute(insert.into(ProgrammerSkill).namedValues(sc.programmerId -> id, sc.skillId -> s.id)))
+      _      <- skills.traverse[Free[F, ?], Boolean](s => execute(insert.into(ProgrammerSkill).namedValues(sc.programmerId -> id, sc.skillId -> s.id)))
     } yield Programmer(id, name, skills)
   }
 
 
   def createProgrammer2[F[_]](name: Name, skillIds: List[SkillId])(implicit S: ScalikeJDBC[F], I: Interacts[F]) = {
     import S._; import I._
-    implicit val M = Free.freeMonad[Coyoneda[F, ?]]
+    implicit val M = Free.freeMonad[F]
 
     for {
       name_  <- ask("What is new programer's name?")
       id     <- generateKey(insert.into(Programmer).namedValues(pc.name -> name_))
       skills <- list(select.from(Skill as s).where.in(s.id, skillIds))(Skill(s))
-      _      <- skills.traverse[FreeC[F, ?], Boolean](s => execute(insert.into(ProgrammerSkill).namedValues(sc.programmerId -> id, sc.skillId -> s.id)))
+      _      <- skills.traverse[Free[F, ?], Boolean](s => execute(insert.into(ProgrammerSkill).namedValues(sc.programmerId -> id, sc.skillId -> s.id)))
     } yield Programmer(id, name, skills)
   }
 
@@ -115,11 +113,11 @@ case class Ask(prompt: String) extends Interact[String]
 case class Tell(msg: String) extends Interact[Unit]
 
 class Interacts[F[_]](implicit I: Inject[Interact, F]) {
-  private def lift[A](v: Interact[A]): FreeC[F, A] = Free.liftFC(I.inj(v))
-  def tell(msg: String): FreeC[F, Unit] = lift(Tell(msg))
-  def ask(prompt: String): FreeC[F, String] = lift(Ask(prompt))
+  private def lift[A](v: Interact[A]): Free[F, A] = Free.liftF(I.inj(v))
+  def tell(msg: String): Free[F, Unit] = lift(Tell(msg))
+  def ask(prompt: String): Free[F, String] = lift(Ask(prompt))
 
-  val monad = Free.freeMonad[({type λ[x] = Coyoneda[F, x]})#λ]
+  val monad = Free.freeMonad[F]
 }
 object Interacts {
   implicit def instance[F[_]](implicit I: Inject[Interact, F]): Interacts[F] = new Interacts[F]

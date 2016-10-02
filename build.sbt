@@ -9,7 +9,8 @@ val scalacOpts =
 
 val scalaVersion_ = "2.11.8"
 val scalikejdbcVersion = "2.3.+"
-val scalazVersion = "7.1.7"
+val scalazVersion = "7.2.5"
+val scalazStreamVersion = "0.8.4a"
 val scalatestVersion = "2.2.6"
 val scalacheckVersion = "1.12.1"
 val h2Version = "1.4.+"
@@ -25,7 +26,7 @@ lazy val core = (project in file("core")).settings(
     ("org.scalikejdbc"         %% "scalikejdbc"                      % scalikejdbcVersion) ::
     ("org.scalaz"              %% "scalaz-core"                      % scalazVersion) ::
     ("org.scalaz"              %% "scalaz-concurrent"                % scalazVersion) ::
-    ("org.scalaz.stream"       %% "scalaz-stream"                    % "0.7.1a") ::
+    ("org.scalaz.stream"       %% "scalaz-stream"                    % scalazStreamVersion) ::
     ("com.h2database"           % "h2"                               % h2Version            % "test") ::
     ("org.scalikejdbc"         %% "scalikejdbc-test"                 % scalikejdbcVersion   % "test") ::
     ("org.scalikejdbc"         %% "scalikejdbc-config"               % scalikejdbcVersion   % "test") ::
