@@ -49,8 +49,7 @@ lazy val sample = (project in file("sample")).settings(
     ("org.scalacheck"          %% "scalacheck"                       % scalacheckVersion             % "test") ::
     Nil,
   scalacOptions ++= scalacOpts,
-  addCompilerPlugin("org.spire-math" %% "kind-projector" % kindProjectorVersion),
-  addCompilerPlugin("org.scalamacros" %% "paradise" % "2.1.0" cross CrossVersion.full)
+  addCompilerPlugin("org.spire-math" %% "kind-projector" % kindProjectorVersion)
 ).dependsOn(core)
 
 lazy val root = (project in file(".")).aggregate(core, sample)
